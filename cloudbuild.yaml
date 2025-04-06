@@ -1,0 +1,25 @@
+steps:
+  # Buildpack を使ってコンテナイメージを作成し、Container Registry/Artifact Registry にプッシュする
+  - name: "gcr.io/k8s-skaffold/pack"
+    args:
+      - "build"
+      - "--builder=gcr.io/buildpacks/builder:v1"
+      - "--publish"
+      - "gcr.io/$PROJECT_ID/my-python-app:$COMMIT_SHA"
+      - "."   # プロジェクトルート全体を対象にする
+  # Cloud Run にデプロイする
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "my-python-app"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/my-python-app:$COMMIT_SHA"
+      - "--region"
+      - "asia-northeast1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+images:
+  - "gcr.io/$PROJECT_ID/my-python-app:$COMMIT_SHA"
